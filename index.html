@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Tax Cal</title>
+<style>
+  :root { --bg:#f1f5f4; --card:#fff; --text:#12211f; --muted:#5b6f6b; --accent:#0f766e; --accent-soft:#d9f0ec; --border:#d3dfdc; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0e1514; --card:#172220; --text:#e8f1ef; --muted:#93a8a4; --accent:#2dd4bf; --accent-soft:#12332f; --border:#2a3a37; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.4 system-ui, sans-serif; padding:16px; padding-top:max(16px, env(safe-area-inset-top)); }
+  main { max-width:480px; margin:0 auto; }
+  h1 { font-size:22px; margin:8px 0 16px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; }
+  label { display:block; font-size:14px; color:var(--muted); margin-bottom:6px; }
+  .field { margin-bottom:14px; }
+  .field:last-child { margin-bottom:0; }
+  .input { display:flex; align-items:center; border:1.5px solid var(--border); border-radius:12px; padding:0 14px; background:var(--bg); }
+  .input:focus-within { border-color:var(--accent); }
+  .input span { color:var(--muted); font-size:18px; }
+  input { flex:1; min-width:0; border:0; background:transparent; color:var(--text); font-size:24px; padding:12px 8px; outline:none; }
+  .result { text-align:center; background:var(--accent-soft); border-color:transparent; }
+  .result .big { font-size:40px; font-weight:700; color:var(--accent); margin:4px 0; word-break:break-all; }
+  .result .small { color:var(--muted); font-size:14px; }
+  .steps { margin:0; padding:0; list-style:none; }
+  .steps li { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .steps li:last-child { border-bottom:0; font-weight:700; }
+  .steps .formula { color:var(--muted); font-size:14px; }
+  .eq { font-size:18px; text-align:center; margin:0 0 12px; word-break:break-word; }
+  .empty { color:var(--muted); text-align:center; }
+  button { width:100%; padding:14px; border:0; border-radius:12px; background:var(--card); color:var(--muted); border:1px solid var(--border); font-size:16px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Money minus Tax</h1>
+
+  <div class="card">
+    <div class="field">
+      <label for="amount">Amount</label>
+      <div class="input"><span>₱</span><input id="amount" type="number" inputmode="decimal" placeholder="100" min="0" step="any" autofocus></div>
+    </div>
+    <div class="field">
+      <label for="tax">Tax percent</label>
+      <div class="input"><input id="tax" type="number" inputmode="decimal" placeholder="1" min="0" step="any"><span>%</span></div>
+    </div>
+  </div>
+
+  <div class="card result" id="result"><p class="empty">Enter an amount and tax percent.</p></div>
+  <div class="card" id="calc" hidden></div>
+  <button id="clear" type="button">Clear</button>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const amountEl = $('amount'), taxEl = $('tax');
+const fmt = n => n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pct = n => n.toLocaleString('en-PH', { maximumFractionDigits: 4 });
+
+function update() {
+  const a = parseFloat(amountEl.value), t = parseFloat(taxEl.value);
+  const result = $('result'), calc = $('calc');
+  if (isNaN(a) || isNaN(t)) {
+    result.innerHTML = '<p class="empty">Enter an amount and tax percent.</p>';
+    calc.hidden = true;
+    return;
+  }
+  const taxAmt = a * t / 100;
+  const left = a - taxAmt;
+  result.innerHTML =
+    '<div class="small">Total amount left</div>' +
+    '<div class="big">₱ ' + fmt(left) + '</div>';
+  calc.hidden = false;
+  calc.innerHTML =
+    '<p class="eq">' + fmt(a) + ' − ' + pct(t) + '% = <b>' + fmt(left) + ' PHP</b></p>' +
+    '<ul class="steps">' +
+      '<li><span>Amount</span><span>₱ ' + fmt(a) + '</span></li>' +
+      '<li><span>Tax <span class="formula">(' + fmt(a) + ' × ' + pct(t) + ' ÷ 100)</span></span><span>− ₱ ' + fmt(taxAmt) + '</span></li>' +
+      '<li><span>Total left <span class="formula">(' + fmt(a) + ' − ' + fmt(taxAmt) + ')</span></span><span>₱ ' + fmt(left) + '</span></li>' +
+    '</ul>';
+}
+amountEl.addEventListener('input', update);
+taxEl.addEventListener('input', update);
+$('clear').addEventListener('click', () => { amountEl.value = ''; taxEl.value = ''; update(); amountEl.focus(); });
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
