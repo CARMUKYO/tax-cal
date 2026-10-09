@@ -78,10 +78,11 @@ function update() {
     '<div class="big">₱ ' + fmt(left) + '</div>';
   calc.hidden = false;
   calc.innerHTML =
-    '<p class="eq">' + fmt(a) + ' − ' + pct(t) + '% = <b>' + fmt(left) + ' PHP</b></p>' +
+    '<p class="eq">' + fmt(a) + ' − ' + fmt(taxAmt) + ' = <b>' + fmt(left) + ' PHP</b></p>' +
     '<ul class="steps">' +
+      '<li><span>' + pct(t) + '% of ' + fmt(a) + ' <span class="formula">(' + fmt(a) + ' × ' + pct(t) + ' ÷ 100)</span></span><span>₱ ' + fmt(taxAmt) + '</span></li>' +
       '<li><span>Amount</span><span>₱ ' + fmt(a) + '</span></li>' +
-      '<li><span>Tax <span class="formula">(' + fmt(a) + ' × ' + pct(t) + ' ÷ 100)</span></span><span>− ₱ ' + fmt(taxAmt) + '</span></li>' +
+      '<li><span>Minus tax</span><span>− ₱ ' + fmt(taxAmt) + '</span></li>' +
       '<li><span>Total left <span class="formula">(' + fmt(a) + ' − ' + fmt(taxAmt) + ')</span></span><span>₱ ' + fmt(left) + '</span></li>' +
     '</ul>';
 }
